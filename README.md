@@ -37,11 +37,30 @@ Použijte co nejvíce vlastností moderního PHP. Doporučení:
 Upravte program tak, aby vypisoval průběžný stav nekonečného streamu.
 
 ### Řešení
-Bude zveřejněno během workshopu ve středu 28.3.2018. Přijďte :-)
+Obsahuje bonus - reporting progressu, který však správně funguje jen v UNIXových terminálech (používá se tput). Lze i nastavit frekvenci pomocí ExtensibleDecorator::setReportTimeTreshold()
+Lze přidávat vícero filtrů / funkcí předávaných do metody ExtensibleDecorator::registerFilter().
+Metoda registerFilter() vrací ID, pomocí kterého lze filtr zrušit metodou unregisterFilter()
+Filtry lze i kompletně vymazat metodou resetFilters()
+Kdybych měl víc času, rád bych doplnil:
+- Validaci správného tvaru filtrů (mohlo by to jít pomocí Reflexe)
+- Přidání možnosti změny reportovací funckce (částečně připraveno, inicializuje se default funkce v konstruktoru)
+- Další featury nové v PHP7, zejména: null coalesce operator ??, "spaceship" operator, ...
 
-### Příklad
+Věci, co by se daly doplnit, ale teď mě nenapadá, jak je navrhnout:
+- Podpora pro extra dlouhé řádky
+- Podpora pro vícero patternů
+- Podpora patternů s jiným počtem matchnutých subpatternů např. (\w)
+
+### Příklady (bash)
 ```bash
 php old.php example.log
+```
+```bash
+php new.php example.log
+```
+Lze i pajpovat (pozor, generate-example.php je ve vyšších počtech pomalý a navíc vyžaduje composer install)
+```bash
+php generate-example.php 10 | php new.php
 ```
 
 #### Vstupní soubor
@@ -69,35 +88,4 @@ alert: 1
 ```
 
 #### Implementace ve "starém" PHP
-```php
-<?php
-$pattern = '/test\.(\w+)/';
-
-// read and parse file
-$log  = file_get_contents($argv[1]);
-$rows = explode(PHP_EOL, $log);
-
-// build stats
-$stats = array();
-foreach ($rows as $row) {
-    // decorator: extract log level
-    if (preg_match($pattern, $row, $matches)) {
-        $level = strtolower($matches[1]);
-
-        // filter: do not accept DEBUG
-        if ($level != 'debug') {
-            if (array_key_exists($level, $stats)) {
-                $stats[$level]++;
-            } else {
-                $stats[$level] = 1;
-            }
-        }
-    }
-}
-
-// show stats
-arsort($stats);
-foreach ($stats as $level => $count) {
-    echo "$level: $count" . PHP_EOL;
-}
-```
+viz old.php
